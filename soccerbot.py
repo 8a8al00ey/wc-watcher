@@ -6,6 +6,7 @@ import os
 import asyncio
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime, timedelta
+from pytz import timezone
 
 WC_COMPETITION = '103' # 17 for only WC matches
 
@@ -32,6 +33,8 @@ ICON_EMOJI = os.getenv("ICON_EMOJI", ':soccer:')
 CHANNEL = os.environ["CHANNEL"]
 # Channel to send debug messages
 DEBUG_CHANNEL = os.getenv("DEBUG_CHANNEL", '')
+
+TIMEZONE = timezone(os.getenv("TIMEZONE", "UTC"))
 
 print("WEBHOOK_URL: %s" % WEBHOOK_URL)
 print("DEBUG_WEBHOOK: %s" % DEBUG_WEBHOOK)
@@ -144,6 +147,9 @@ def get_daily_matches():
     if len(r.json()['Results']) > 0:
         daily_matches = '*Todays Matches:*\n'
     for match in r.json()['Results']:
+        date_start = datetime.strptime(match['Date'], "%Y-%m-%dT%H:%M:%SZ")
+        date_start_local = date_start.astimezone(TIMEZONE)
+        date_start_str = date_start_local.strftime("%A, %b %d %I:%M%p %Z")
         home_team = match['Home']
         home_team_id = home_team['IdCountry']
         home_team_flag = ''
@@ -154,7 +160,7 @@ def get_daily_matches():
         away_team_id = away_team['IdCountry']
         if away_team_id in FLAGS.keys():
             away_team_flag = FLAGS[away_team_id]
-        daily_matches += '{} {} vs {} {}\n'.format(home_team_flag, home_team['TeamName'][0]['Description'], away_team['TeamName'][0]['Description'], away_team_flag)
+        daily_matches += '{} {} vs {} {} at {}\n'.format(home_team_flag, home_team['TeamName'][0]['Description'], away_team['TeamName'][0]['Description'], away_team_flag, date_start_str)
     return daily_matches
 
 def get_current_matches():
