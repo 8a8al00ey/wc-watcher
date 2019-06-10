@@ -1,9 +1,8 @@
 import requests
 import json
-import os.path
 from enum import Enum
 import time
-import private
+import os
 import asyncio
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime, timedelta
@@ -16,6 +15,31 @@ MATCH_URL = '/timelines/{}/{}/{}/{}?language=en-US' # IdCompetition/IdSeason/IdS
 DAILY_URL = '/calendar/matches?from={}Z&to={}Z&idCompetition={}&language=en-US'
 PLAYER_URL = ''
 TEAM_URL = ''
+
+# env vars
+# Slack webhook
+WEBHOOK_URL = os.environ["WEBHOOK_URL"]
+# Webhook for sending debug information
+DEBUG_WEBHOOK = os.getenv("DEBUG_WEBHOOK", "")
+DEBUG = eval(os.getenv("DEBUG", "false"))
+
+# Use to override default webhook messaging settings
+# Bots username
+BOT_NAME = os.getenv("BOT_NAME", 'WorldCup-Bot')
+# Bots avatar
+ICON_EMOJI = os.getenv("ICON_EMOJI", ':soccer:')
+# Channel to send messages to. Ex: 'random'
+CHANNEL = os.environ["CHANNEL"]
+# Channel to send debug messages
+DEBUG_CHANNEL = os.getenv("DEBUG_CHANNEL", '')
+
+print("WEBHOOK_URL: %s" % WEBHOOK_URL)
+print("DEBUG_WEBHOOK: %s" % DEBUG_WEBHOOK)
+print("DEBUG: %s" % DEBUG)
+print("BOT_NAME: %s" % BOT_NAME)
+print("ICON_EMOJI: %s" % ICON_EMOJI)
+print("CHANNEL: %s" % CHANNEL)
+print("DEBUG_CHANNEL: %s" % DEBUG_CHANNEL)
 
 FLAGS = {
     'ARG': ':flag-ar:',
@@ -160,7 +184,7 @@ def get_current_matches():
             print('Invalid match information')
             continue
 
-        matches.append({'idCompetition': id_competition, 'idSeason': id_season, 'idStage': id_stage, 'idMatch': id_match, 'homeTeamId': home_team_id, 
+        matches.append({'idCompetition': id_competition, 'idSeason': id_season, 'idStage': id_stage, 'idMatch': id_match, 'homeTeamId': home_team_id,
         'homeTeam': home_team_name, 'awayTeamId': away_team_id, 'awayTeam': away_team_name, 'events': []})
 
         for player in match['HomeTeam']['Players']:
@@ -174,7 +198,7 @@ def get_current_matches():
             for player_details in player['ShortName']:
                 player_name = player_details['Description']
             players[player_id] = player_name
-        
+
     return matches, players
 
 def get_match_events(idCompetition, idSeason, idStage, idMatch):
@@ -278,7 +302,7 @@ def build_event(player_list, current_match, event):
         extraInfo = True
     elif EventType.has_value(event['type']):
         event_message = None
-    elif private.DEBUG:
+    elif DEBUG:
         event_message = 'Missing event information for {} vs {}: Event {}\n{}'.format(current_match['homeTeam'], current_match['awayTeam'], event['type'], event['url'])
         is_debug = True
     else:
@@ -306,7 +330,7 @@ def load_matches():
     with open('match_list.txt', 'r') as file:
         content = file.read()
     return json.loads(content) if content else {}
-    
+
 
 def check_for_updates():
     events = []
@@ -341,19 +365,21 @@ def check_for_updates():
     save_matches(match_list)
     return events
 
-def send_event(event, url=private.WEBHOOK_URL, channel=''):
+def send_event(event, url=os.environ['WEBHOOK_URL'], channel=''):
+    print("send event: %s" % event)
     headers = {'Content-Type': 'application/json'}
     payload = { 'text': event }
-    
-    if channel is not '':
-       payload['channel'] = channel
-    elif hasattr(private, 'CHANNEL') and private.CHANNEL is not '':
-       payload['channel'] = private.CHANNEL
 
-    if hasattr(private, 'BOT_NAME') and private.BOT_NAME is not '':
-       payload['username'] = private.BOT_NAME
-    if  hasattr(private, 'ICON_EMOJI') and private.ICON_EMOJI is not '':
-       payload['icon_emoji'] = private.ICON_EMOJI
+    if channel is not '':
+        payload['channel'] = channel
+    elif CHANNEL is not '':
+        payload['channel'] = CHANNEL
+
+    if BOT_NAME is not '':
+        payload['username'] = BOT_NAME
+    if ICON_EMOJI is not '':
+        payload['icon_emoji'] = ICON_EMOJI
+    print(json.dumps(payload))
     try:
         r = requests.post(url, data=json.dumps(payload), headers=headers)
         r.raise_for_status()
@@ -366,12 +392,12 @@ def send_event(event, url=private.WEBHOOK_URL, channel=''):
 
 def heart_beat():
     count = 0
-    send_event('Coming up', url=private.DEBUG_WEBHOOK, channel=private.DEBUG_CHANNEL)
+    send_event('Coming up', url=DEBUG_WEBHOOK, channel=DEBUG_CHANNEL)
     while True:
         count = count + 1
         if count >= 60:
             count = 0
-            send_event('Health ping', url=private.DEBUG_WEBHOOK, channel=private.DEBUG_CHANNEL)
+            send_event('Health ping', url=DEBUG_WEBHOOK, channel=DEBUG_CHANNEL)
         time.sleep(60)
 
 def main():
@@ -384,9 +410,9 @@ def main():
                 send_event(daily_matches)
         events = check_for_updates()
         for event in events:
-            url = private.WEBHOOK_URL
-            if event['debug'] == True and private.DEBUG and private.DEBUG_WEBHOOK is not '':
-                url = private.DEBUG_WEBHOOK
+            url = WEBHOOK_URL
+            if event['debug'] == True and DEBUG and DEBUG_WEBHOOK is not '':
+                url = DEBUG_WEBHOOK
             send_event(event['message'], url)
         time.sleep(60)
 
@@ -395,7 +421,7 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     main_task = asyncio.ensure_future(loop.run_in_executor(executor, main))
     heart_beat_task = None
-    if private.DEBUG and private.DEBUG_WEBHOOK is not '':
+    if DEBUG and DEBUG_WEBHOOK is not '':
         heart_beat_task = asyncio.ensure_future(loop.run_in_executor(executor, heart_beat))
     try:
         loop.run_forever()
