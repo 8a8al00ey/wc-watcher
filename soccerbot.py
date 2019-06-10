@@ -44,40 +44,45 @@ print("ICON_EMOJI: %s" % ICON_EMOJI)
 print("CHANNEL: %s" % CHANNEL)
 print("DEBUG_CHANNEL: %s" % DEBUG_CHANNEL)
 
-FLAGS = {
-    'ARG': ':flag-ar:',
-    'AUS': ':flag-au:',
-    'BEL': ':flag-be:',
-    'BRA': ':flag-br:',
-    'COL': ':flag-co:',
-    'CRC': ':flag-cr:',
-    'CRO': ':flag-hr:',
-    'DEN': ':flag-dk:',
-    'EGY': ':flag-eg:',
-    'ENG': ':flag-england:',
-    'FRA': ':flag-fr:',
-    'GER': ':flag-de:',
-    'ISL': ':flag-is:',
-    'IRN': ':flag-ir:',
-    'JPN': ':flag-jp:',
-    'KOR': ':flag-kr:',
-    'MEX': ':flag-mx:',
-    'MAR': ':flag-ma:',
-    'NGA': ':flag-ng:',
-    'PAN': ':flag-pa:',
-    'PER': ':flag-pe:',
-    'POL': ':flag-pl:',
-    'POR': ':flag-pt:',
-    'RUS': ':flag-ru:',
-    'KSA': ':flag-sa:',
-    'SEN': ':flag-sn:',
-    'SRB': ':flag-rs:',
-    'ESP': ':flag-es:',
-    'SWE': ':flag-se:',
-    'SUI': ':flag-ch:',
-    'TUN': ':flag-tn:',
-    'URU': ':flag-uy:'
-}
+with open('flags.json') as fd:
+    FLAGS = json.load(fd)
+
+
+#
+# FLAGS = {
+#     'ARG': ':flag-ar:',
+#     'AUS': ':flag-au:',
+#     'BEL': ':flag-be:',
+#     'BRA': ':flag-br:',
+#     'COL': ':flag-co:',
+#     'CRC': ':flag-cr:',
+#     'CRO': ':flag-hr:',
+#     'DEN': ':flag-dk:',
+#     'EGY': ':flag-eg:',
+#     'ENG': ':flag-england:',
+#     'FRA': ':flag-fr:',
+#     'GER': ':flag-de:',
+#     'ISL': ':flag-is:',
+#     'IRN': ':flag-ir:',
+#     'JPN': ':flag-jp:',
+#     'KOR': ':flag-kr:',
+#     'MEX': ':flag-mx:',
+#     'MAR': ':flag-ma:',
+#     'NGA': ':flag-ng:',
+#     'PAN': ':flag-pa:',
+#     'PER': ':flag-pe:',
+#     'POL': ':flag-pl:',
+#     'POR': ':flag-pt:',
+#     'RUS': ':flag-ru:',
+#     'KSA': ':flag-sa:',
+#     'SEN': ':flag-sn:',
+#     'SRB': ':flag-rs:',
+#     'ESP': ':flag-es:',
+#     'SWE': ':flag-se:',
+#     'SUI': ':flag-ch:',
+#     'TUN': ':flag-tn:',
+#     'URU': ':flag-uy:'
+# }
 
 class EventType(Enum):
     GOAL_SCORED = 0
@@ -160,6 +165,8 @@ def get_daily_matches():
         away_team_id = away_team['IdCountry']
         if away_team_id in FLAGS.keys():
             away_team_flag = FLAGS[away_team_id]
+        print(away_team_id)
+        print(home_team_id)
         daily_matches += '{} {} vs {} {} at {}\n'.format(home_team_flag, home_team['TeamName'][0]['Description'], away_team['TeamName'][0]['Description'], away_team_flag, date_start_str)
     return daily_matches
 
