@@ -11,11 +11,11 @@ This bot uses the undocumented FIFA API's to report on World Cup matches. It wil
 
 ### Usage
 1. Setup a new Slack App (https://api.slack.com/apps) with Webhook permission
-1. Copy `private.py.config` to `private.py`
-1. In `private.py`, change `WEBHOOK_URL` to point to your Slack webhook
+1. Copy `.env.template` to `.env`
+1. In `.env`, change `WEBHOOK_URL` to point to your Slack webhook
     + If you want to see debug information, which currently pings a heartbeat every hour, also fill in the `DEBUG_WEBHOOK` url with a Slack webhook and set `DEBUG = True`
     + You can also set `WC_COMPETITION = None` in `soccerbot.py` to get all current FIFA matches and see what the output looks like. Just make sure to change it back to `WC_COMPETITION = 17` for world cup only
-1. In `private.py`, change `CHANNEL` to the desired channel in your Slack space
+1. In `.env`, change `CHANNEL` to the desired channel in your Slack space
 1. Use `pip install -r requirements.txt`
 1. Run `python soccerbot.py`
 
