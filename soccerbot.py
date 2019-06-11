@@ -22,11 +22,11 @@ TEAM_URL = ''
 WEBHOOK_URL = os.environ["WEBHOOK_URL"]
 # Webhook for sending debug information
 DEBUG_WEBHOOK = os.getenv("DEBUG_WEBHOOK", "")
-DEBUG = eval(os.getenv("DEBUG", "false"))
+DEBUG = eval(os.getenv("DEBUG", "False"))
 
 # Use to override default webhook messaging settings
 # Bots username
-BOT_NAME = os.getenv("BOT_NAME", 'WorldCup-Bot')
+BOT_NAME = os.getenv("BOT_NAME", 'World Cup Bot')
 # Bots avatar
 ICON_EMOJI = os.getenv("ICON_EMOJI", ':soccer:')
 # Channel to send messages to. Ex: 'random'
@@ -46,43 +46,6 @@ print("DEBUG_CHANNEL: %s" % DEBUG_CHANNEL)
 
 with open('flags.json') as fd:
     FLAGS = json.load(fd)
-
-
-#
-# FLAGS = {
-#     'ARG': ':flag-ar:',
-#     'AUS': ':flag-au:',
-#     'BEL': ':flag-be:',
-#     'BRA': ':flag-br:',
-#     'COL': ':flag-co:',
-#     'CRC': ':flag-cr:',
-#     'CRO': ':flag-hr:',
-#     'DEN': ':flag-dk:',
-#     'EGY': ':flag-eg:',
-#     'ENG': ':flag-england:',
-#     'FRA': ':flag-fr:',
-#     'GER': ':flag-de:',
-#     'ISL': ':flag-is:',
-#     'IRN': ':flag-ir:',
-#     'JPN': ':flag-jp:',
-#     'KOR': ':flag-kr:',
-#     'MEX': ':flag-mx:',
-#     'MAR': ':flag-ma:',
-#     'NGA': ':flag-ng:',
-#     'PAN': ':flag-pa:',
-#     'PER': ':flag-pe:',
-#     'POL': ':flag-pl:',
-#     'POR': ':flag-pt:',
-#     'RUS': ':flag-ru:',
-#     'KSA': ':flag-sa:',
-#     'SEN': ':flag-sn:',
-#     'SRB': ':flag-rs:',
-#     'ESP': ':flag-es:',
-#     'SWE': ':flag-se:',
-#     'SUI': ':flag-ch:',
-#     'TUN': ':flag-tn:',
-#     'URU': ':flag-uy:'
-# }
 
 class EventType(Enum):
     GOAL_SCORED = 0
@@ -155,18 +118,19 @@ def get_daily_matches():
         date_start = datetime.strptime(match['Date'], "%Y-%m-%dT%H:%M:%SZ")
         date_start_local = date_start.astimezone(TIMEZONE)
         date_start_str = date_start_local.strftime("%A, %b %d %I:%M%p %Z")
+
         home_team = match['Home']
         home_team_id = home_team['IdCountry']
         home_team_flag = ''
         if home_team_id in FLAGS.keys():
             home_team_flag = FLAGS[home_team_id]
+
         away_team = match['Away']
         away_team_flag = ''
         away_team_id = away_team['IdCountry']
         if away_team_id in FLAGS.keys():
             away_team_flag = FLAGS[away_team_id]
-        print(away_team_id)
-        print(home_team_id)
+
         daily_matches += '{} {} vs {} {} at {}\n'.format(home_team_flag, home_team['TeamName'][0]['Description'], away_team['TeamName'][0]['Description'], away_team_flag, date_start_str)
     return daily_matches
 
@@ -378,7 +342,7 @@ def check_for_updates():
     save_matches(match_list)
     return events
 
-def send_event(event, url=os.environ['WEBHOOK_URL'], channel=''):
+def send_event(event, url=WEBHOOK_URL, channel=''):
     print("send event: %s" % event)
     headers = {'Content-Type': 'application/json'}
     payload = { 'text': event }
