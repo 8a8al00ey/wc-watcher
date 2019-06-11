@@ -21,8 +21,8 @@ This bot uses the undocumented FIFA API's to report on World Cup matches. It wil
 
 ### Card emoji
 1. Go to https://slack.com/customize/emoji
-1. Enter `yellow_card_new` as name
-1. Upload `hand_yellow_card.png`
+1. Enter `yellow_card` as name
+1. Upload `card_yellow.png`
 1. Save emoji
 
-Repeat for `red_card_new` and `hand_red_card.png`
+Repeat for `red_card` and `card_red.png`
