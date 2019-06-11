@@ -117,7 +117,7 @@ def get_daily_matches():
     for match in r.json()['Results']:
         date_start = datetime.strptime(match['Date'], "%Y-%m-%dT%H:%M:%SZ")
         date_start_local = date_start.astimezone(TIMEZONE)
-        date_start_str = date_start_local.strftime("%A, %b %d %I:%M%p %Z")
+        date_start_str = date_start_local.strftime("%A, %b %d at %I:%M%p %Z")
 
         home_team = match['Home']
         home_team_id = home_team['IdCountry']
@@ -131,7 +131,7 @@ def get_daily_matches():
         if away_team_id in FLAGS.keys():
             away_team_flag = FLAGS[away_team_id]
 
-        daily_matches += '{} {} vs {} {} at {}\n'.format(home_team_flag, home_team['TeamName'][0]['Description'], away_team['TeamName'][0]['Description'], away_team_flag, date_start_str)
+        daily_matches += '{} {} vs {} {} || {}\n'.format(home_team_flag, home_team['TeamName'][0]['Description'], away_team['TeamName'][0]['Description'], away_team_flag, date_start_str)
     return daily_matches
 
 def get_current_matches():
