@@ -26,3 +26,16 @@ This bot uses the undocumented FIFA API's to report on World Cup matches. It wil
 1. Save emoji
 
 Repeat for `red_card` and `card_red.png`
+
+## Docker
+
+Build docker image
+
+```
+docker build -t soccerbot .
+```
+
+Run in `NO_SLACK` mode (outputs events to terminal instead of sending to Slack)
+```
+docker run --rm -it -e NO_SLACK=True soccerbot
+```

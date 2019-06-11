@@ -22,7 +22,7 @@ TEAM_URL = ''
 
 # env vars
 # Slack webhook
-WEBHOOK_URL = os.environ["WEBHOOK_URL"]
+WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")
 # Webhook for sending debug information
 DEBUG_WEBHOOK = os.getenv("DEBUG_WEBHOOK", "")
 DEBUG = eval(os.getenv("DEBUG", "False"))
@@ -33,11 +33,17 @@ BOT_NAME = os.getenv("BOT_NAME", 'World Cup Bot')
 # Bots avatar
 ICON_EMOJI = os.getenv("ICON_EMOJI", ':soccer:')
 # Channel to send messages to. Ex: 'random'
-CHANNEL = os.environ["CHANNEL"]
+CHANNEL = os.getenv("CHANNEL", "")
 # Channel to send debug messages
 DEBUG_CHANNEL = os.getenv("DEBUG_CHANNEL", '')
 
 TIMEZONE = timezone(os.getenv("TIMEZONE", "UTC"))
+NO_SLACK = eval(os.getenv("NO_SLACK", "False"))
+
+if NO_SLACK:
+    print("===================================================================")
+    print("Running in NO_SLACK mode, sending events to stdout instead of slack")
+    print("===================================================================\n")
 
 print("WEBHOOK_URL: %s" % WEBHOOK_URL)
 print("DEBUG_WEBHOOK: %s" % DEBUG_WEBHOOK)
@@ -346,7 +352,11 @@ def check_for_updates():
     return events
 
 def send_event(event, url=WEBHOOK_URL, channel=''):
-    print("send event: %s" % event)
+    if NO_SLACK:
+        print("{}\n".format(event))
+        return
+
+    print("send event: {}".format(event))
     headers = {'Content-Type': 'application/json'}
     payload = { 'text': event }
 
@@ -359,7 +369,7 @@ def send_event(event, url=WEBHOOK_URL, channel=''):
         payload['username'] = BOT_NAME
     if ICON_EMOJI is not '':
         payload['icon_emoji'] = ICON_EMOJI
-    print(json.dumps(payload))
+
     try:
         r = requests.post(url, data=json.dumps(payload), headers=headers)
         r.raise_for_status()
