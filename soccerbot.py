@@ -8,6 +8,7 @@ from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime, timedelta
 from pytz import timezone
 import socket
+import random
 
 HOSTNAME = socket.gethostname()
 
@@ -222,7 +223,8 @@ def build_event(player_list, current_match, event):
     extraInfo = False
     if (event['type'] == EventType.GOAL_SCORED.value or event['type'] == EventType.FREE_KICK_GOAL.value
         or event['type'] == EventType.FREE_KICK_GOAL.value):
-        event_message = ':soccer: {} GOOOOAL! {} *{}:{}* {}'.format(event['time'], current_match['homeTeam'], event['home_goal'], event['away_goal'], current_match['awayTeam'])
+        num_o = random.randint(3, 12)
+        event_message = ':soccer: {} G{}AL! {} *{}:{}* {}'.format(event['time'], "O"*num_o, current_match['homeTeam'], event['home_goal'], event['away_goal'], current_match['awayTeam'])
         extraInfo = True
     elif event['type'] == EventType.YELLOW_CARD.value:
         event_message = ':yellow_card: {} Yellow card.'.format(event['time'])
