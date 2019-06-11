@@ -8,3 +8,6 @@ run:
 
 run-shell:
 	$(RUN) sh
+
+run-daemon: build
+	docker run --rm -it -d --env-file=.env soccerbot
