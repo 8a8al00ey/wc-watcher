@@ -8,7 +8,7 @@ build:
 run:
 	$(RUN)
 
-run-shell:
+shell:
 	$(RUN) sh
 
 run-daemon: build
