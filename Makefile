@@ -1,8 +1,10 @@
+RUN := docker run --rm -it -v `pwd`:/app --env-file=.env soccerbot
+
 build:
 	docker build -t soccerbot .
 
 run:
-	docker run --rm -v `pwd`:/app --env-file=.env soccerbot
+	$(RUN)
 
 run-shell:
-	docker run --rm -it -v `pwd`:/app --env-file=.env soccerbot sh
+	$(RUN) sh
