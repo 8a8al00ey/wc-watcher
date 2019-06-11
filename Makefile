@@ -15,3 +15,8 @@ run-daemon: build
 
 stop:
 	docker stop $$(docker ps -a -q --filter ancestor=$(IMAGE_NAME) --format="{{.ID}}")
+
+pull:
+	git pull
+
+redeploy: stop pull run-daemon
