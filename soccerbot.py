@@ -7,6 +7,9 @@ import asyncio
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime, timedelta
 from pytz import timezone
+import socket
+
+HOSTNAME = socket.gethostname()
 
 WC_COMPETITION = '103' # 17 for only WC matches
 
@@ -369,12 +372,12 @@ def send_event(event, url=WEBHOOK_URL, channel=''):
 
 def heart_beat():
     count = 0
-    send_event('Coming up', url=DEBUG_WEBHOOK, channel=DEBUG_CHANNEL)
+    send_event('Coming up on {}'.format(HOSTNAME), url=DEBUG_WEBHOOK, channel=DEBUG_CHANNEL)
     while True:
         count = count + 1
         if count >= 60:
             count = 0
-            send_event('Health ping', url=DEBUG_WEBHOOK, channel=DEBUG_CHANNEL)
+            send_event('Health ping from {}'.format(HOSTNAME), url=DEBUG_WEBHOOK, channel=DEBUG_CHANNEL)
         time.sleep(60)
 
 def main():
