@@ -402,10 +402,10 @@ def main():
                 send_event(daily_matches)
         events = check_for_updates()
         for event in events:
-            url = WEBHOOK_URL
             if event['debug'] == True and DEBUG and DEBUG_WEBHOOK is not '':
-                url = DEBUG_WEBHOOK
-            send_event(event['message'], url)
+                send_event(event['message'], url=DEBUG_WEBHOOK, channel=DEBUG_CHANNEL)
+            else:
+                send_event(event['message'])
         time.sleep(60)
 
 if __name__ == '__main__':
