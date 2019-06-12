@@ -27,6 +27,7 @@ WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")
 # Webhook for sending debug information
 DEBUG_WEBHOOK = os.getenv("DEBUG_WEBHOOK", "")
 DEBUG = eval(os.getenv("DEBUG", "False"))
+DEBUG_HEALTHCHECK = eval(os.getenv("DEBUG_HEALTHCHECK", "True"))
 
 # Use to override default webhook messaging settings
 # Bots username
@@ -385,12 +386,13 @@ def send_event(event, url=WEBHOOK_URL, channel=''):
 def heart_beat():
     count = 0
     send_event('Coming up on {}'.format(HOSTNAME), url=DEBUG_WEBHOOK, channel=DEBUG_CHANNEL)
-    while True:
-        count = count + 1
-        if count >= 60:
-            count = 0
-            send_event('Health ping from {}'.format(HOSTNAME), url=DEBUG_WEBHOOK, channel=DEBUG_CHANNEL)
-        time.sleep(60)
+    if DEBUG_HEALTHCHECK:
+        while True:
+            count = count + 1
+            if count >= 60:
+                count = 0
+                send_event('Health ping from {}'.format(HOSTNAME), url=DEBUG_WEBHOOK, channel=DEBUG_CHANNEL)
+            time.sleep(60)
 
 def main():
     last_sent_daily = (datetime.now() - timedelta(days=1)).timetuple().tm_yday
