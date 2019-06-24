@@ -33,3 +33,5 @@ NO_SLACK = getDefaultBool("NO_SLACK", 1)
 
 LOGGING_LEVEL = os.getenv("LOGGING_LEVEL", "INFO")
 LOGGING_FORMAT = os.getenv("LOGGING_FORMAT", '%(asctime)s,%(msecs)d %(levelname)s: %(message)s')
+
+ONLY_SEND_DAILY_MATCHES_ONCE = getDefaultBool("ONLY_SEND_DAILY_MATCHES_ONCE", 0)

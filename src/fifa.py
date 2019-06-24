@@ -281,15 +281,22 @@ def save_last_daily_matches_sent():
     return
 
 def should_send_daily_matches():
-    if not os.path.isfile('daily_matches.txt'):
-        return False
-    with open('daily_matches.txt', 'r') as file:
-        content = file.read().strip()
+    if settings.ONLY_SEND_DAILY_MATCHES_ONCE:
+        if not os.path.isfile('daily_matches.txt'):
+            return False
+        with open('daily_matches.txt', 'r') as file:
+            content = file.read().strip()
 
-    last_sent = date.fromisoformat(content)
-    now = datetime.utcnow().date()
-
-    return now - last_sent >= timedelta(days=1)
+        last_sent = date.fromisoformat(content)
+        now = datetime.utcnow().date()
+        return now - last_sent >= timedelta(days=1)
+    else:
+        last_sent_daily = (datetime.now() - timedelta(days=1)).timetuple().tm_yday
+        if (last_sent_daily < datetime.now().timetuple().tm_yday):
+            last_sent_daily = datetime.now().timetuple().tm_yday
+            return True
+        else:
+            return False
 
 def save_matches(match_list):
     with open('match_list.txt', 'w') as file:
