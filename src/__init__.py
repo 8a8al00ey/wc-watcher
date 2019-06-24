@@ -1,10 +1,16 @@
 import logging, coloredlogs
 from . import settings
 
-coloredlogs.install(
-    level=settings.LOGGING_LEVEL,
-    fmt=settings.LOGGING_FORMAT,
-)
+if settings.COLOR_LOGS:
+  coloredlogs.install(
+      level=settings.LOGGING_LEVEL,
+      fmt=settings.LOGGING_FORMAT,
+  )
+else:
+  logging.basicConfig(
+      level=settings.LOGGING_LEVEL,
+      format=settings.LOGGING_FORMAT,
+  )
 
 log = logging.getLogger(__name__)
 

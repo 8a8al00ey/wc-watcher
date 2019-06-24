@@ -32,6 +32,7 @@ TIMEZONE = timezone(os.getenv("TIMEZONE", "UTC"))
 NO_SLACK = getDefaultBool("NO_SLACK", 1)
 
 LOGGING_LEVEL = os.getenv("LOGGING_LEVEL", "INFO")
-LOGGING_FORMAT = os.getenv("LOGGING_FORMAT", '%(asctime)s,%(msecs)d %(levelname)s: %(message)s')
+LOGGING_FORMAT = os.getenv("LOGGING_FORMAT", '%(asctime)s %(name)s [%(levelname)s]: %(message)s')
+COLOR_LOGS = getDefaultBool("COLOR_LOGS", 0)
 
 ONLY_SEND_DAILY_MATCHES_ONCE = getDefaultBool("ONLY_SEND_DAILY_MATCHES_ONCE", 0)
