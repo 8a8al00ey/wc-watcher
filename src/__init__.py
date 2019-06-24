@@ -1,9 +1,9 @@
-import logging
+import logging, coloredlogs
 from . import settings
 
-logging.basicConfig(
+coloredlogs.install(
     level=settings.LOGGING_LEVEL,
-    format=settings.LOGGING_FORMAT,
+    fmt=settings.LOGGING_FORMAT,
 )
 
 log = logging.getLogger(__name__)
