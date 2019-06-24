@@ -1,5 +1,6 @@
 venv/
 match_list.txt
+daily_matches.txt
 private.py
 nohup.out
 # Byte-compiled / optimized / DLL files
@@ -106,5 +107,3 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-
-.env

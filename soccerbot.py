@@ -5,7 +5,7 @@ import time
 import os
 import asyncio
 from concurrent.futures import ProcessPoolExecutor
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from pytz import timezone
 import socket
 import random
@@ -309,6 +309,23 @@ def build_event(player_list, current_match, event):
     else:
         return None
 
+def save_last_daily_matches_sent():
+    dt = datetime.utcnow()
+    with open('daily_matches.txt', 'w') as file:
+        file.write(dt.date().isoformat())
+    return
+
+def should_send_daily_matches():
+    if not os.path.isfile('daily_matches.txt'):
+        return False
+    with open('daily_matches.txt', 'r') as file:
+        content = file.read().strip()
+
+    last_sent = date.fromisoformat(content)
+    now = datetime.utcnow().date()
+
+    return now - last_sent >= timedelta(days=1)
+
 def save_matches(match_list):
     with open('match_list.txt', 'w') as file:
         file.write(json.dumps(match_list))
@@ -395,13 +412,12 @@ def heart_beat():
             time.sleep(60)
 
 def main():
-    last_sent_daily = (datetime.now() - timedelta(days=1)).timetuple().tm_yday
     while True:
-        if (last_sent_daily < datetime.now().timetuple().tm_yday):
-            last_sent_daily = datetime.now().timetuple().tm_yday
+        if should_send_daily_matches():
             daily_matches = get_daily_matches()
             if daily_matches is not '':
                 send_event(daily_matches)
+                save_last_daily_matches_sent()
         events = check_for_updates()
         for event in events:
             if event['debug'] == True and DEBUG and DEBUG_WEBHOOK is not '':
