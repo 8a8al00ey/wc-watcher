@@ -3,14 +3,16 @@ import json
 from enum import Enum
 import time
 import os
-import asyncio
-from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime, timedelta, date
-from pytz import timezone
-import socket
 import random
+import logging
 
-HOSTNAME = socket.gethostname()
+from . import settings
+
+log = logging.getLogger(__name__)
+
+with open('flags.json') as fd:
+    FLAGS = json.load(fd)
 
 WC_COMPETITION = '103' # 17 for only WC matches
 
@@ -20,43 +22,6 @@ MATCH_URL = '/timelines/{}/{}/{}/{}?language=en-US' # IdCompetition/IdSeason/IdS
 DAILY_URL = '/calendar/matches?from={}Z&to={}Z&idCompetition={}&language=en-US'
 PLAYER_URL = ''
 TEAM_URL = ''
-
-# env vars
-# Slack webhook
-WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")
-# Webhook for sending debug information
-DEBUG_WEBHOOK = os.getenv("DEBUG_WEBHOOK", "")
-DEBUG = eval(os.getenv("DEBUG", "False"))
-DEBUG_HEALTHCHECK = eval(os.getenv("DEBUG_HEALTHCHECK", "True"))
-
-# Use to override default webhook messaging settings
-# Bots username
-BOT_NAME = os.getenv("BOT_NAME", 'World Cup Bot')
-# Bots avatar
-ICON_EMOJI = os.getenv("ICON_EMOJI", ':soccer:')
-# Channel to send messages to. Ex: 'random'
-CHANNEL = os.getenv("CHANNEL", "")
-# Channel to send debug messages
-DEBUG_CHANNEL = os.getenv("DEBUG_CHANNEL", '')
-
-TIMEZONE = timezone(os.getenv("TIMEZONE", "UTC"))
-NO_SLACK = eval(os.getenv("NO_SLACK", "False"))
-
-if NO_SLACK:
-    print("===================================================================")
-    print("Running in NO_SLACK mode, sending events to stdout instead of slack")
-    print("===================================================================\n")
-
-print("WEBHOOK_URL: %s" % WEBHOOK_URL)
-print("DEBUG_WEBHOOK: %s" % DEBUG_WEBHOOK)
-print("DEBUG: %s" % DEBUG)
-print("BOT_NAME: %s" % BOT_NAME)
-print("ICON_EMOJI: %s" % ICON_EMOJI)
-print("CHANNEL: %s" % CHANNEL)
-print("DEBUG_CHANNEL: %s" % DEBUG_CHANNEL)
-
-with open('flags.json') as fd:
-    FLAGS = json.load(fd)
 
 class EventType(Enum):
     GOAL_SCORED = 0
@@ -120,14 +85,14 @@ def get_daily_matches():
         r = requests.get(daily_url)
         r.raise_for_status()
     except request.exceptions.HTTPError as ex:
-        print('Failed to get list of daily matches.\n{}'.format(ex))
+        log.warn('Failed to get list of daily matches.\n{}'.format(ex))
         return daily_matches
 
     if len(r.json()['Results']) > 0:
         daily_matches = '*Todays Matches:*\n'
     for match in r.json()['Results']:
         date_start = datetime.strptime(match['Date'], "%Y-%m-%dT%H:%M:%SZ")
-        date_start_local = date_start.astimezone(TIMEZONE)
+        date_start_local = date_start.astimezone(settings.TIMEZONE)
         date_start_str = date_start_local.strftime("%A, %b %d at %I:%M%p %Z")
 
         home_team = match['Home']
@@ -169,7 +134,7 @@ def get_current_matches():
         for entry in match['AwayTeam']['TeamName']:
             away_team_name = entry['Description']
         if not id_competition or not id_season or not id_stage or not id_match:
-            print('Invalid match information')
+            log.warn('Invalid match information')
             continue
 
         matches.append({'idCompetition': id_competition, 'idSeason': id_season, 'idStage': id_stage, 'idMatch': id_match, 'homeTeamId': home_team_id,
@@ -304,7 +269,7 @@ def build_event(player_list, current_match, event):
             event_message += '\n> {}'.format(active_team)
 
     if event_message:
-        print('Sending event: {}'.format(event_message))
+        log.debug('Sending event: {}'.format(event_message))
         return {'message': event_message, 'debug': is_debug}
     else:
         return None
@@ -370,76 +335,3 @@ def check_for_updates():
 
     save_matches(match_list)
     return events
-
-def send_event(event, url=WEBHOOK_URL, channel=''):
-    if NO_SLACK:
-        print("{}\n".format(event))
-        return
-
-    print("send event: {}".format(event))
-    headers = {'Content-Type': 'application/json'}
-    payload = { 'text': event }
-
-    if channel is not '':
-        payload['channel'] = channel
-    elif CHANNEL is not '':
-        payload['channel'] = CHANNEL
-
-    if BOT_NAME is not '':
-        payload['username'] = BOT_NAME
-    if ICON_EMOJI is not '':
-        payload['icon_emoji'] = ICON_EMOJI
-
-    try:
-        r = requests.post(url, data=json.dumps(payload), headers=headers)
-        r.raise_for_status()
-    except requests.exceptions.HTTPError as ex:
-        print('Failed to send message: {}'.format(ex))
-        return
-    except requests.exceptions.ConnectionError as ex:
-        print('Failed to send message: {}'.format(ex))
-        return
-
-def heart_beat():
-    count = 0
-    send_event('Coming up on {}'.format(HOSTNAME), url=DEBUG_WEBHOOK, channel=DEBUG_CHANNEL)
-    if DEBUG_HEALTHCHECK:
-        while True:
-            count = count + 1
-            if count >= 60:
-                count = 0
-                send_event('Health ping from {}'.format(HOSTNAME), url=DEBUG_WEBHOOK, channel=DEBUG_CHANNEL)
-            time.sleep(60)
-
-def main():
-    while True:
-        if should_send_daily_matches():
-            daily_matches = get_daily_matches()
-            if daily_matches is not '':
-                send_event(daily_matches)
-                save_last_daily_matches_sent()
-        events = check_for_updates()
-        for event in events:
-            if event['debug'] == True and DEBUG and DEBUG_WEBHOOK is not '':
-                send_event(event['message'], url=DEBUG_WEBHOOK, channel=DEBUG_CHANNEL)
-            else:
-                send_event(event['message'])
-        time.sleep(60)
-
-if __name__ == '__main__':
-    executor = ProcessPoolExecutor(2)
-    loop = asyncio.get_event_loop()
-    main_task = asyncio.ensure_future(loop.run_in_executor(executor, main))
-    heart_beat_task = None
-    if DEBUG and DEBUG_WEBHOOK is not '':
-        heart_beat_task = asyncio.ensure_future(loop.run_in_executor(executor, heart_beat))
-    try:
-        loop.run_forever()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        if main_task and not main_task.cancelled():
-            main_task.cancel()
-        if heart_beat_task and not heart_beat_task.cancelled():
-            heart_beat_task.cancel()
-        loop.close()
