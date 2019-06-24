@@ -5,6 +5,9 @@ import logging
 
 log = logging.getLogger(__name__)
 
+def getDefaultBool(var, default):
+    return bool(int(os.getenv(var, default)))
+
 HOSTNAME = socket.gethostname()
 
 # env vars
@@ -12,8 +15,8 @@ HOSTNAME = socket.gethostname()
 WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")
 # Webhook for sending debug information
 DEBUG_WEBHOOK = os.getenv("DEBUG_WEBHOOK", "")
-DEBUG = eval(os.getenv("DEBUG", "False"))
-DEBUG_HEALTHCHECK = eval(os.getenv("DEBUG_HEALTHCHECK", "True"))
+DEBUG = getDefaultBool("DEBUG", 0)
+DEBUG_HEALTHCHECK = getDefaultBool("DEBUG_HEALTHCHECK", 1)
 
 # Use to override default webhook messaging settings
 # Bots username
@@ -26,7 +29,7 @@ CHANNEL = os.getenv("CHANNEL", "")
 DEBUG_CHANNEL = os.getenv("DEBUG_CHANNEL", '')
 
 TIMEZONE = timezone(os.getenv("TIMEZONE", "UTC"))
-NO_SLACK = eval(os.getenv("NO_SLACK", "False"))
+NO_SLACK = getDefaultBool("NO_SLACK", 1)
 
 LOGGING_LEVEL = os.getenv("LOGGING_LEVEL", "INFO")
 LOGGING_FORMAT = os.getenv("LOGGING_FORMAT", '%(asctime)s,%(msecs)d %(levelname)s: %(message)s')
