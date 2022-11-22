@@ -1,5 +1,6 @@
 import requests
 import logging
+import json
 
 from . import settings
 
@@ -14,15 +15,15 @@ def send_event(event, url=settings.WEBHOOK_URL, channel=''):
     headers = {'Content-Type': 'application/json'}
     payload = { 'text': event }
 
-    if channel is not '':
-        payload['channel'] = channel
-    elif settings.CHANNEL is not '':
-        payload['channel'] = CHANNEL
+    #if channel is not '':
+    #     payload['channel'] = channel
+    # elif settings.CHANNEL is not '':
+    #     payload['channel'] = CHANNEL
 
-    if settings.BOT_NAME is not '':
-        payload['username'] = BOT_NAME
-    if settings.ICON_EMOJI is not '':
-        payload['icon_emoji'] = ICON_EMOJI
+    # if settings.BOT_NAME is not '':
+    #     payload['username'] = BOT_NAME
+    # if settings.ICON_EMOJI is not '':
+    #     payload['icon_emoji'] = ICON_EMOJI
 
     try:
         r = requests.post(url, data=json.dumps(payload), headers=headers)

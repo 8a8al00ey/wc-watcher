@@ -1,4 +1,8 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 import socket
 from pytz import timezone
 import logging
