@@ -356,6 +356,9 @@ def build_event(player_list, current_match, event):
     elif event['type'] == EventType.VAR_REVIEW.value:
          log.debug(f"Inside VAR Review")
          event_message = ':referee: :looking: VAR! {}'.format(event['event_description'])
+    elif event['type'] == EventType.OFFSIDE.value:
+        event_message = ':raising_hand::runner: {} OFFSIDE! {}'.format(event['time'],active_team_flag)
+        event_message += '\n> {}'.format(event['event_description'])
     elif EventType.has_value(event['type']):
         event_message = None
     elif DEBUG:
